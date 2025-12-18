@@ -45,65 +45,57 @@ export const EcommerceTemplate = ({
   const { hasCollections, loading: loadingCollections } = useCollections()
 
   const header = (
-    <div className={`py-2 ${headerClassName}`}>
+    <div className={`py-6 border-b border-black/5 ${headerClassName}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <BrandLogoLeft />
+          {/* Logo - Minimalist */}
+          <Link to="/" className="text-2xl font-serif font-bold tracking-tight text-black">
+            CHAOS THEORY
+          </Link>
 
-          {/* Navigation */}
+          {/* Navigation - Clean minimal */}
           <div className="hidden md:flex items-center space-x-8">
-            <nav className="flex space-x-6">
-              {!loadingCollections && hasCollections && (
-                <ScrollLink 
-                  to="/#collections" 
-                  className="text-foreground/70 hover:text-foreground transition-colors"
-                >
-                  Collections
-                </ScrollLink>
-              )}
-              <ScrollLink 
-                to="/#products" 
-                className="text-foreground/70 hover:text-foreground transition-colors"
+            <nav className="flex space-x-8">
+              <Link 
+                to="/" 
+                className="text-sm tracking-[0.2em] uppercase text-black/60 hover:text-black transition-colors"
               >
-                Products
-              </ScrollLink>
+                Collection
+              </Link>
               <Link 
                 to="/blog" 
-                className="text-foreground/70 hover:text-foreground transition-colors"
+                className="text-sm tracking-[0.2em] uppercase text-black/60 hover:text-black transition-colors"
               >
-                Blog
+                Journal
               </Link>
             </nav>
           </div>
 
-          {/* Profile & Cart */}
-          <div className="flex items-center space-x-2">
+          {/* Profile & Cart - Minimal Icons */}
+          <div className="flex items-center space-x-4">
             <ProfileMenu />
             
             {showCart && (
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={openCart}
-                className="relative"
-                aria-label="Ver carrito"
+                className="relative text-black hover:text-black/60 transition-colors"
+                aria-label="Cart"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5" strokeWidth={1.5} />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                    {totalItems > 99 ? '99+' : totalItems}
+                  <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-sans rounded-full h-4 w-4 flex items-center justify-center">
+                    {totalItems}
                   </span>
                 )}
-              </Button>
+              </button>
             )}
           </div>
         </div>
 
         {/* Page Title */}
         {pageTitle && (
-          <div className="mt-6">
-            <h1 className="text-3xl font-bold text-foreground">
+          <div className="mt-8 border-t border-black/5 pt-8">
+            <h1 className="text-4xl font-serif font-bold tracking-tight text-black">
               {pageTitle}
             </h1>
           </div>
@@ -113,46 +105,11 @@ export const EcommerceTemplate = ({
   )
 
   const footer = (
-    <div className={`bg-black text-white py-12 ${footerClassName}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Brand */}
-          <div>
-            <BrandLogoLeft />
-            <p className="mt-4 text-white/70">
-              Your trusted online store
-            </p>
-          </div>
-
-          {/* Links */}
-          <div>
-            <h3 className="font-semibold mb-4 text-white">Links</h3>
-            <div className="space-y-2">
-              <Link 
-                to="/" 
-                className="block text-white/70 hover:text-white transition-colors"
-              >
-                Home
-              </Link>
-              <Link 
-                to="/blog" 
-                className="block text-white/70 hover:text-white transition-colors"
-              >
-                Blog
-              </Link>
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div>
-            <h3 className="font-semibold mb-4 text-white">Follow Us</h3>
-            <SocialLinks />
-          </div>
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-white/20 text-center text-white/70">
-          <p>&copy; 2025 Your Store. All rights reserved.</p>
-        </div>
+    <div className={`bg-white border-t border-black/5 py-16 ${footerClassName}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-xs tracking-[0.3em] uppercase text-black/40 font-sans">
+          Curated in Mexico City
+        </p>
       </div>
     </div>
   )

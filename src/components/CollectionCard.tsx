@@ -1,6 +1,10 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
 import { type Collection } from '@/lib/supabase'
+
+/**
+ * COLLECTION CARD - Gallery Frameless Style
+ * Minimal design, image-first presentation
+ */
 
 interface CollectionCardProps {
   collection: Collection
@@ -9,49 +13,43 @@ interface CollectionCardProps {
 
 export const CollectionCard = ({ collection, onViewProducts }: CollectionCardProps) => {
   return (
-    <Card className="bg-white border border-gray-200 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
-          {collection.image ? (
-            <img 
-              src={collection.image} 
-              alt={collection.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-              No image
-            </div>
-          )}
-        </div>
-        
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="text-black font-semibold text-lg line-clamp-1">
-              {collection.name}
-            </h3>
-            {collection.featured && (
-              <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium">
-                Featured
-              </span>
-            )}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.3 }}
+      className="cursor-pointer"
+      onClick={() => onViewProducts(collection.id)}
+    >
+      {/* Frameless Image */}
+      <div className="aspect-[3/4] bg-white overflow-hidden border border-black/5">
+        {collection.image ? (
+          <img 
+            src={collection.image} 
+            alt={collection.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-black/20 text-xs tracking-[0.3em] uppercase">
+            No Image
           </div>
-          
-          {collection.description && (
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-              {collection.description}
-            </p>
-          )}
-          
-          <Button 
-            variant="outline" 
-            className="w-full text-black border-gray-300 hover:bg-gray-50"
-            onClick={() => onViewProducts(collection.id)}
-          >
-            View Products
-          </Button>
+        )}
+      </div>
+      
+      {/* Minimal Metadata */}
+      <div className="mt-4">
+        <h3 className="text-xl font-serif font-bold text-black mb-1">
+          {collection.name}
+        </h3>
+        
+        {collection.description && (
+          <p className="text-sm text-black/60 line-clamp-2 leading-relaxed">
+            {collection.description}
+          </p>
+        )}
+        
+        <div className="mt-3 text-xs tracking-[0.3em] uppercase text-black/40">
+          View Collection →
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }

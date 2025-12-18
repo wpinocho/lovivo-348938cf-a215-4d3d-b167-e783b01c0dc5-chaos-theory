@@ -66,13 +66,13 @@ export const ProductPageUI = ({ logic }: ProductPageUIProps) => {
   if (logic.loading) {
     return (
       <EcommerceTemplate>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Skeleton className="aspect-square rounded-lg" />
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-10 w-32" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 py-16">
+          <Skeleton className="aspect-square" />
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-12 w-40" />
           </div>
         </div>
       </EcommerceTemplate>
@@ -82,15 +82,16 @@ export const ProductPageUI = ({ logic }: ProductPageUIProps) => {
   if (logic.notFound) {
     return (
       <EcommerceTemplate>
-        <div className="text-center py-16">
-            <h1 className="text-4xl font-bold mb-4">Product not found</h1>
-            <p className="text-muted-foreground mb-8">The product you're looking for doesn't exist or has been deleted.</p>
-            <Button asChild>
-              <Link to="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to home
-              </Link>
-            </Button>
+        <div className="text-center py-32">
+            <h1 className="text-6xl font-serif font-bold mb-6 text-black">Piece Not Found</h1>
+            <p className="text-black/60 mb-12 tracking-[0.2em] uppercase text-sm">This artwork does not exist or has been removed</p>
+            <Link 
+              to="/"
+              className="inline-flex items-center text-sm tracking-[0.2em] uppercase text-black hover:text-black/60 transition-colors"
+            >
+              <ArrowLeft className="mr-3 h-4 w-4" />
+              Return to Collection
+            </Link>
         </div>
       </EcommerceTemplate>
     )
@@ -100,9 +101,9 @@ export const ProductPageUI = ({ logic }: ProductPageUIProps) => {
 
   return (
     <EcommerceTemplate>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Product Image */}
-        <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 py-16">
+        {/* Product Image - Gallery Style */}
+        <div className="aspect-square overflow-hidden border border-black/5 bg-white">
           <img
             src={logic.currentImage || "/placeholder.svg"}
             alt={logic.product.title}
@@ -110,57 +111,65 @@ export const ProductPageUI = ({ logic }: ProductPageUIProps) => {
           />
         </div>
 
-        {/* Product Details */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">{logic.product.title}</h1>
-            <div className="flex items-center gap-4 mt-2">
-              <span className="text-2xl font-bold">
+        {/* Product Details - Minimalist */}
+        <div className="space-y-8">
+          {/* Title & Price */}
+          <div className="border-b border-black/5 pb-8">
+            <h1 className="text-5xl font-serif font-bold tracking-tight text-black mb-6">
+              {logic.product.title}
+            </h1>
+            <div className="flex items-baseline gap-4">
+              <span className="text-3xl font-serif text-black">
                 {logic.formatMoney(logic.currentPrice)}
               </span>
               {logic.currentCompareAt && logic.currentCompareAt > logic.currentPrice && (
-                <span className="text-lg text-muted-foreground line-through">
+                <span className="text-xl text-black/40 line-through">
                   {logic.formatMoney(logic.currentCompareAt)}
                 </span>
               )}
             </div>
+            <p className="mt-4 text-xs tracking-[0.3em] uppercase text-black/50">
+              Limited Edition • 2024
+            </p>
           </div>
 
+          {/* Description */}
           {logic.product.description && (
             <div>
-              <h3 className="font-semibold mb-2">Description</h3>
+              <h3 className="text-sm tracking-[0.2em] uppercase text-black/60 mb-4">About This Piece</h3>
               <div 
-                className="text-muted-foreground prose prose-sm max-w-none"
+                className="text-black/70 leading-relaxed prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: logic.product.description }}
               />
             </div>
           )}
 
-          {/* Product Options */}
+          {/* Product Options - Minimal */}
           {logic.product.options && logic.product.options.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-6 border-b border-black/5 pb-8">
               {logic.product.options.map((option) => (
                 <div key={option.name}>
-                  <Label className="text-base font-medium">{option.name}</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <Label className="text-sm tracking-[0.2em] uppercase text-black/60 mb-3 block">
+                    {option.name}
+                  </Label>
+                  <div className="flex flex-wrap gap-3">
                     {option.values.map((value) => {
                       const isSelected = logic.selected[option.name] === value
                       const isAvailable = logic.isOptionValueAvailable(option.name, value)
                       
                       return (
-                        <Button
+                        <button
                           key={value}
-                          variant={isSelected ? "default" : "outline"}
-                          size="sm"
                           disabled={!isAvailable}
                           onClick={() => logic.handleOptionSelect(option.name, value)}
-                          className={!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+                          className={`px-6 py-3 border text-sm tracking-wide transition-colors ${
+                            isSelected 
+                              ? 'bg-black text-white border-black' 
+                              : 'bg-white text-black border-black/20 hover:border-black'
+                          } ${!isAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
                         >
                           {value}
-                          {!isAvailable && (
-                            <span className="ml-1 text-xs">(Out of stock)</span>
-                          )}
-                        </Button>
+                        </button>
                       )
                     })}
                   </div>
@@ -169,85 +178,65 @@ export const ProductPageUI = ({ logic }: ProductPageUIProps) => {
             </div>
           )}
 
-          {/* Quantity and Add to Cart */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <Label htmlFor="quantity" className="text-base font-medium">
+          {/* Quantity and Add to Cart - Clean */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm tracking-[0.2em] uppercase text-black/60">
                 Quantity
               </Label>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
+              <div className="flex items-center space-x-4">
+                <button
                   onClick={() => logic.handleQuantityChange(Math.max(1, logic.quantity - 1))}
                   disabled={logic.quantity <= 1}
+                  className="w-10 h-10 border border-black/20 hover:border-black disabled:opacity-30 transition-colors"
                 >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  value={logic.quantity}
-                  onChange={(e) => logic.handleQuantityChange(parseInt(e.target.value) || 1)}
-                  className="w-20 text-center"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
+                  <Minus className="h-4 w-4 mx-auto" />
+                </button>
+                <span className="text-lg font-serif w-12 text-center">{logic.quantity}</span>
+                <button
                   onClick={() => logic.handleQuantityChange(logic.quantity + 1)}
+                  className="w-10 h-10 border border-black/20 hover:border-black transition-colors"
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                  <Plus className="h-4 w-4 mx-auto" />
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={logic.handleAddToCart}
-                disabled={!logic.inStock}
-                className="flex-1"
-                size="lg"
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                {logic.inStock ? 'Add to cart' : 'Out of stock'}
-              </Button>
-              
-              {!logic.inStock && (
-                <Badge variant="secondary">Out of stock</Badge>
-              )}
-            </div>
+            <button
+              onClick={logic.handleAddToCart}
+              disabled={!logic.inStock}
+              className="w-full bg-black text-white py-4 text-sm tracking-[0.2em] uppercase hover:bg-black/90 disabled:bg-black/30 transition-colors"
+            >
+              {logic.inStock ? 'Acquire Piece' : 'Currently Unavailable'}
+            </button>
           </div>
 
-          {/* Product Info */}
+          {/* Product Info - Minimal */}
           {logic.matchingVariant && (
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Product information</h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>SKU:</span>
-                    <span>{logic.matchingVariant.sku || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Available stock:</span>
-                    <span>{logic.matchingVariant.inventory_quantity || 0}</span>
-                  </div>
+            <div className="border-t border-black/5 pt-8">
+              <h3 className="text-sm tracking-[0.2em] uppercase text-black/60 mb-4">Details</h3>
+              <div className="space-y-3 text-sm text-black/70">
+                <div className="flex justify-between">
+                  <span>Edition Number</span>
+                  <span className="font-serif">{logic.matchingVariant.sku || '1/1'}</span>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex justify-between">
+                  <span>Availability</span>
+                  <span className="font-serif">{logic.matchingVariant.inventory_quantity || 0} in stock</span>
+                </div>
+              </div>
+            </div>
           )}
 
-          <Separator />
-
-          <Button
-            variant="outline"
-            onClick={logic.handleNavigateBack}
-            className="w-full"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Continue shopping
-          </Button>
+          <div className="pt-8">
+            <Link
+              to="/"
+              className="inline-flex items-center text-sm tracking-[0.2em] uppercase text-black/60 hover:text-black transition-colors"
+            >
+              <ArrowLeft className="mr-3 h-4 w-4" />
+              Back to Collection
+            </Link>
+          </div>
         </div>
       </div>
     </EcommerceTemplate>

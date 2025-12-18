@@ -2,45 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Playfair Display for serif headings */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+
 html {
   scroll-behavior: smooth;
+  cursor: none; /* Hide default cursor for custom cursor */
 }
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Subtle canvas grain texture on white backgrounds */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.015;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* CHAOS THEORY Design System - MOMA Gallery Aesthetic */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pure monochrome palette */
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 0 0% 0%; /* Pure black */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 0%; /* Black */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 96%; /* Off-white */
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 90%; /* Hairline borders */
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
 
-    --radius: 0.5rem;
+    --radius: 0rem; /* Sharp corners for gallery aesthetic */
 
     --sidebar-background: 0 0% 98%;
 
@@ -105,5 +122,22 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Serif font for headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* Quiet Luxury: No shadows, minimal borders, clean typography */
+@layer components {
+  .gallery-border {
+    @apply border border-black/5;
+  }
+
+  .hairline {
+    @apply border-[0.5px] border-black/10;
   }
 }
