@@ -7,7 +7,6 @@
 
 html {
   scroll-behavior: smooth;
-  cursor: none; /* Hide default cursor for custom cursor */
 }
 
 /* Subtle canvas grain texture on white backgrounds */
