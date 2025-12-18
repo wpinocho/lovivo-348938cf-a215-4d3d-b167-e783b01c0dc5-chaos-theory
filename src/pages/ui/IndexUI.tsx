@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { ChaosHero } from '@/components/ChaosHero';
 import { MasonryGallery } from '@/components/MasonryGallery';
 import { ArtistProcess } from '@/components/ArtistProcess';
 import { CustomCursor } from '@/components/CustomCursor';
 import { FloatingCart } from '@/components/FloatingCart';
+import { InteractiveGalleryModal } from '@/components/InteractiveGalleryModal';
 import { EcommerceTemplate } from '@/templates/EcommerceTemplate';
 import type { UseIndexLogicReturn } from '@/components/headless/HeadlessIndex';
 
@@ -23,6 +25,8 @@ export const IndexUI = ({ logic }: IndexUIProps) => {
     loading,
   } = logic;
 
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
   return (
     <EcommerceTemplate 
       showCart={true}
@@ -31,7 +35,13 @@ export const IndexUI = ({ logic }: IndexUIProps) => {
       <CustomCursor />
 
       {/* Hero: "The Splash" */}
-      <ChaosHero />
+      <ChaosHero onGalleryClick={() => setIsGalleryOpen(true)} />
+
+      {/* Interactive Gallery Modal */}
+      <InteractiveGalleryModal 
+        isOpen={isGalleryOpen} 
+        onClose={() => setIsGalleryOpen(false)} 
+      />
 
       {/* Masonry Gallery Grid */}
       {!loading && filteredProducts.length > 0 && (

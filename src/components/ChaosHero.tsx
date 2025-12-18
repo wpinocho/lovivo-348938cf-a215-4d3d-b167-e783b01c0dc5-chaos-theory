@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react';
  * CHAOS HERO - "The Splash"
  * Full-screen hero with interactive paint-bleed typography
  */
-export const ChaosHero = () => {
+interface ChaosHeroProps {
+  onGalleryClick?: () => void;
+}
+
+export const ChaosHero = ({ onGalleryClick }: ChaosHeroProps) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -87,6 +91,17 @@ export const ChaosHero = () => {
         >
           A Pollock-Inspired Collection
         </motion.p>
+
+        {/* Gallery Button */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          onClick={onGalleryClick}
+          className="mt-8 px-8 py-3 border border-black text-black text-sm tracking-[0.2em] uppercase hover:bg-black hover:text-white transition-all duration-300"
+        >
+          Gallery
+        </motion.button>
       </div>
 
       {/* Scroll indicator */}
