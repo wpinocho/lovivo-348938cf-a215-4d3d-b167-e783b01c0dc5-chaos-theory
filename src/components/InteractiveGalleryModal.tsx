@@ -17,8 +17,10 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const { formatMoney } = useSettings()
 
   // Mouse tracking with accumulative movement
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
+  // Inicializar canvas CENTRADO para permitir movimiento en todas direcciones
+  // Canvas es 400% (4x viewport), así que -150% lo centra perfectamente
+  const mouseX = useMotionValue(-1500)
+  const mouseY = useMotionValue(-1500)
   
   // Track last mouse position for delta calculation
   const lastMousePos = useRef({ x: 0, y: 0 })
@@ -71,7 +73,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const deltaY = clientY - lastMousePos.current.y
 
     // Sensitivity: how much the grid moves per pixel of mouse movement
-    const sensitivity = 0.8
+    const sensitivity = 1.5 // Aumentado para movimiento más amplio y fluido
 
     // ACCUMULATE movement (inverse parallax: mouse right → grid left)
     const currentX = mouseX.get()
@@ -116,7 +118,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[400%] h-[400%] flex items-center justify-center"
+        className="absolute inset-0 w-[400%] h-[400%] relative"
       >
         {loading ? (
           <div className="text-center">
@@ -125,20 +127,21 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // Chaotic positioning - dispersed across canvas
+              // Chaotic positioning - distribuido por TODO el canvas gigante (5%-95%)
+              // Esto aprovecha el canvas completo de 400% en todas direcciones
               const chaosPositions = [
-                { top: 10, left: 8 },    // Top-left corner
-                { top: 15, left: 65 },   // Top-right area
-                { top: 35, left: 25 },   // Upper-mid left
-                { top: 30, left: 85 },   // Upper-mid right edge
-                { top: 50, left: 45 },   // Dead center
-                { top: 55, left: 15 },   // Mid-left
-                { top: 65, left: 72 },   // Lower-mid right
-                { top: 75, left: 35 },   // Lower-mid center
-                { top: 80, left: 90 },   // Bottom-right corner
-                { top: 85, left: 55 },   // Bottom-center
-                { top: 40, left: 5 },    // Mid-left edge
-                { top: 70, left: 8 },    // Lower-left
+                { top: 5, left: 10 },    // Esquina superior izquierda
+                { top: 12, left: 85 },   // Superior derecha extremo
+                { top: 22, left: 25 },   // Área superior-media
+                { top: 35, left: 70 },   // Centro-derecha
+                { top: 45, left: 15 },   // Media-izquierda
+                { top: 52, left: 90 },   // Centro-derecha extremo
+                { top: 60, left: 40 },   // Centro-centro
+                { top: 68, left: 5 },    // Media-izquierda extremo
+                { top: 75, left: 65 },   // Inferior-derecha
+                { top: 82, left: 30 },   // Inferior-centro
+                { top: 88, left: 80 },   // Esquina inferior derecha
+                { top: 93, left: 50 },   // Inferior-centro bajo
               ]
               
               // Variable heights for asymmetric effect
