@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, type Product } from '@/lib/supabase'
 import { STORE_ID } from '@/lib/config'
@@ -16,9 +16,13 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const [loading, setLoading] = useState(true)
   const { formatMoney } = useSettings()
 
-  // Mouse tracking
+  // Mouse tracking with accumulative movement
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
+  
+  // Track last mouse position for delta calculation
+  const lastMousePos = useRef({ x: 0, y: 0 })
+  const isFirstMove = useRef(true)
 
   // Smooth spring animation for grid movement (OPPOSITE direction)
   const gridX = useSpring(mouseX, { damping: 25, stiffness: 150 })
@@ -49,24 +53,41 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     }
   }
 
-  // Track mouse movement
+  // ACCUMULATIVE mouse movement tracking
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { clientX, clientY, currentTarget } = e
-    const { width, height } = currentTarget.getBoundingClientRect()
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clientX = e.clientX - rect.left
+    const clientY = e.clientY - rect.top
 
-    // Calculate position relative to center (-1 to 1)
-    const xPercent = (clientX / width - 0.5) * 2
-    const yPercent = (clientY / height - 0.5) * 2
+    // Skip first move to initialize position
+    if (isFirstMove.current) {
+      lastMousePos.current = { x: clientX, y: clientY }
+      isFirstMove.current = false
+      return
+    }
 
-    // Move grid in OPPOSITE direction (multiply by negative and scale for MORE movement)
-    mouseX.set(-xPercent * 100)
-    mouseY.set(-yPercent * 100)
+    // Calculate delta (difference from last position)
+    const deltaX = clientX - lastMousePos.current.x
+    const deltaY = clientY - lastMousePos.current.y
+
+    // Sensitivity: how much the grid moves per pixel of mouse movement
+    const sensitivity = 0.8
+
+    // ACCUMULATE movement (inverse parallax: mouse right → grid left)
+    const currentX = mouseX.get()
+    const currentY = mouseY.get()
+    
+    mouseX.set(currentX + (-deltaX * sensitivity))
+    mouseY.set(currentY + (-deltaY * sensitivity))
+
+    // Update last position for next delta calculation
+    lastMousePos.current = { x: clientX, y: clientY }
   }
 
   const handleMouseLeave = () => {
-    // Return to center smoothly
-    mouseX.set(0)
-    mouseY.set(0)
+    // Reset tracking flag, but DON'T move grid back to center
+    // Grid stays where it is - user can continue exploring
+    isFirstMove.current = true
   }
 
   if (!isOpen) return null
