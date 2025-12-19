@@ -17,9 +17,9 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const { formatMoney } = useSettings()
 
   // LUSANO-STYLE COORDINATE MAPPING
-  // Canvas es 250% (2.5x viewport)
+  // Canvas es 180% (1.8x viewport) - Optimizado para 8 productos
   // Mouse position directly maps to canvas position with smooth spring animation
-  // Center (50%, 50%) → Canvas at (-75%, -75%)
+  // Center (50%, 50%) → Canvas at (-40%, -40%)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
@@ -64,11 +64,11 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const mousePercentY = (e.clientY - rect.top) / rect.height
 
     // Map to canvas position
-    // Canvas is 250% (2.5x viewport), so overflow is 150%
-    // Formula: targetPosition = -(mousePercent * 1.5 * viewportSize)
-    // When mouse is at 50% → canvas at -75% (centered)
-    const targetX = -(mousePercentX * 1.5 * rect.width)
-    const targetY = -(mousePercentY * 1.5 * rect.height)
+    // Canvas is 180% (1.8x viewport), so overflow is 80%
+    // Formula: targetPosition = -(mousePercent * 0.8 * viewportSize)
+    // When mouse is at 50% → canvas at -40% (centered)
+    const targetX = -(mousePercentX * 0.8 * rect.width)
+    const targetY = -(mousePercentY * 0.8 * rect.height)
 
     // Update motion values (spring will animate smoothly)
     mouseX.set(targetX)
@@ -102,7 +102,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[250%] h-[250%] relative"
+        className="absolute inset-0 w-[180%] h-[180%] relative"
       >
         {loading ? (
           <div className="text-center">
@@ -111,48 +111,22 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // STRATEGIC MANUAL DISTRIBUTION - 24 positions covering entire 250% canvas
-              // Cobertura completa: 4 esquinas + 4 bordes + cuadrantes intermedios
+              // OPTIMIZED DISTRIBUTION FOR 8 PRODUCTS (180% grid)
+              // Área segura: 12-88% en ambos ejes (sin bordes extremos para evitar cortes)
+              // Cobertura COMPLETA: arriba (izq-centro-der), centro (izq-der), abajo (izq-centro-der)
               const chaosPositions = [
-                // 🔴 4 ESQUINAS (extremos del canvas)
-                { top: 8, left: 6 },     // Superior-izquierda
-                { top: 12, left: 88 },   // Superior-derecha
-                { top: 85, left: 8 },    // Inferior-izquierda
-                { top: 88, left: 86 },   // Inferior-derecha
-
-                // 🟠 4 BORDES CENTRALES
-                { top: 6, left: 48 },    // Arriba-centro
-                { top: 90, left: 50 },   // Abajo-centro
-                { top: 48, left: 5 },    // Izquierda-centro
-                { top: 45, left: 92 },   // Derecha-centro
-
-                // 🟡 CUADRANTE SUPERIOR-IZQUIERDO (4 productos)
-                { top: 18, left: 15 },
-                { top: 25, left: 28 },
-                { top: 32, left: 12 },
-                { top: 35, left: 32 },
-
-                // 🟢 CUADRANTE SUPERIOR-DERECHO (4 productos)
-                { top: 15, left: 62 },
-                { top: 22, left: 75 },
-                { top: 28, left: 58 },
-                { top: 38, left: 72 },
-
-                // 🔵 CUADRANTE INFERIOR-IZQUIERDO (4 productos)
-                { top: 58, left: 18 },
-                { top: 65, left: 8 },
-                { top: 72, left: 25 },
-                { top: 78, left: 15 },
-
-                // 🟣 CUADRANTE INFERIOR-DERECHO (4 productos)
-                { top: 62, left: 68 },
-                { top: 68, left: 82 },
-                { top: 75, left: 58 },
-                { top: 82, left: 72 },
+                { top: 15, left: 15 },   // 1️⃣ Superior-izquierda
+                { top: 18, left: 50 },   // 2️⃣ Superior-CENTRO
+                { top: 20, left: 80 },   // 3️⃣ Superior-derecha
+                { top: 45, left: 22 },   // 4️⃣ Centro-izquierda
+                { top: 50, left: 72 },   // 5️⃣ Centro-derecha
+                { top: 75, left: 18 },   // 6️⃣ Inferior-izquierda
+                { top: 78, left: 55 },   // 7️⃣ Inferior-CENTRO
+                { top: 80, left: 78 },   // 8️⃣ Inferior-derecha
               ]
               
-              // Variable heights con más rango (250-500px) para más caos visual
-              const heights = [320, 400, 280, 450, 350, 380, 300, 480, 360, 420, 290, 460, 340, 500, 310, 440, 330, 470, 370, 490, 260, 430, 390, 410]
+              // Heights variadas para 8 productos (350-440px)
+              const heights = [380, 420, 350, 400, 440, 370, 410, 390]
               
               const position = chaosPositions[index % chaosPositions.length]
               const height = heights[index % heights.length]
@@ -167,7 +141,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
                     position: 'absolute',
                     top: `${position.top}%`,
                     left: `${position.left}%`,
-                    width: '200px',
+                    width: '220px',
                     height: `${height}px`
                   }}
                 >
