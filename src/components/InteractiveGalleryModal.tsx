@@ -111,33 +111,44 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // Dense chaotic positioning - 24 positions across canvas 250%
-              // MUCHA VARIACIÓN VERTICAL (eje Y) para mejor distribución
+              // STRATEGIC MANUAL DISTRIBUTION - 24 positions covering entire 250% canvas
+              // Cobertura completa: 4 esquinas + 4 bordes + cuadrantes intermedios
               const chaosPositions = [
-                { top: 5, left: 12 },    // ARRIBA EXTREMO
-                { top: 8, left: 45 },    // Arriba
-                { top: 3, left: 78 },    // ARRIBA EXTREMO derecha
-                { top: 15, left: 25 },   // Arriba-medio
-                { top: 22, left: 62 },   // Arriba-medio derecha
-                { top: 12, left: 88 },   // Arriba borde
-                { top: 30, left: 8 },    // Medio-arriba izquierda
-                { top: 38, left: 38 },   // Medio izquierda
-                { top: 28, left: 70 },   // Medio derecha
-                { top: 42, left: 92 },   // Medio borde derecho
-                { top: 48, left: 18 },   // CENTRO izquierda
-                { top: 45, left: 50 },   // CENTRO VERDADERO
-                { top: 52, left: 82 },   // Centro derecha
-                { top: 58, left: 5 },    // Medio-abajo izquierda
-                { top: 62, left: 32 },   // Medio-abajo
-                { top: 65, left: 65 },   // Medio-abajo derecha
-                { top: 60, left: 90 },   // Medio-abajo borde
-                { top: 72, left: 22 },   // Abajo izquierda
-                { top: 78, left: 52 },   // Abajo centro
-                { top: 75, left: 78 },   // Abajo derecha
-                { top: 82, left: 12 },   // ABAJO EXTREMO izquierda
-                { top: 85, left: 42 },   // Abajo extremo centro
-                { top: 88, left: 72 },   // ABAJO EXTREMO derecha
-                { top: 90, left: 88 },   // ABAJO EXTREMO borde
+                // 🔴 4 ESQUINAS (extremos del canvas)
+                { top: 8, left: 6 },     // Superior-izquierda
+                { top: 12, left: 88 },   // Superior-derecha
+                { top: 85, left: 8 },    // Inferior-izquierda
+                { top: 88, left: 86 },   // Inferior-derecha
+
+                // 🟠 4 BORDES CENTRALES
+                { top: 6, left: 48 },    // Arriba-centro
+                { top: 90, left: 50 },   // Abajo-centro
+                { top: 48, left: 5 },    // Izquierda-centro
+                { top: 45, left: 92 },   // Derecha-centro
+
+                // 🟡 CUADRANTE SUPERIOR-IZQUIERDO (4 productos)
+                { top: 18, left: 15 },
+                { top: 25, left: 28 },
+                { top: 32, left: 12 },
+                { top: 35, left: 32 },
+
+                // 🟢 CUADRANTE SUPERIOR-DERECHO (4 productos)
+                { top: 15, left: 62 },
+                { top: 22, left: 75 },
+                { top: 28, left: 58 },
+                { top: 38, left: 72 },
+
+                // 🔵 CUADRANTE INFERIOR-IZQUIERDO (4 productos)
+                { top: 58, left: 18 },
+                { top: 65, left: 8 },
+                { top: 72, left: 25 },
+                { top: 78, left: 15 },
+
+                // 🟣 CUADRANTE INFERIOR-DERECHO (4 productos)
+                { top: 62, left: 68 },
+                { top: 68, left: 82 },
+                { top: 75, left: 58 },
+                { top: 82, left: 72 },
               ]
               
               // Variable heights con más rango (250-500px) para más caos visual
