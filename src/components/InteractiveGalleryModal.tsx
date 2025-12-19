@@ -16,25 +16,18 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const [loading, setLoading] = useState(true)
   const { formatMoney } = useSettings()
 
-  // Mouse tracking with accumulative movement + MOMENTUM
-  // Inicializar canvas CENTRADO para permitir movimiento en todas direcciones
-  // Canvas es 250% (2.5x viewport), así que -75% lo centra perfectamente
-  const mouseX = useMotionValue(-750)
-  const mouseY = useMotionValue(-750)
-  
-  // Track last mouse position for delta calculation
-  const lastMousePos = useRef({ x: 0, y: 0 })
-  const isFirstMove = useRef(true)
-  
-  // Track velocity for momentum effect
-  const velocity = useRef({ x: 0, y: 0 })
-  const momentumFrameRef = useRef<number>()
-  const isMouseMoving = useRef(false)
-  const mouseStopTimer = useRef<NodeJS.Timeout>()
+  // LUSANO-STYLE COORDINATE MAPPING
+  // Canvas es 250% (2.5x viewport)
+  // Mouse position directly maps to canvas position with smooth spring animation
+  // Center (50%, 50%) → Canvas at (-75%, -75%)
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
 
-  // Smooth spring animation for grid movement (OPPOSITE direction)
-  const gridX = useSpring(mouseX, { damping: 25, stiffness: 150 })
-  const gridY = useSpring(mouseY, { damping: 25, stiffness: 150 })
+  // Smooth spring animation for grid movement
+  // Damping: 30 (more resistance = smoother)
+  // Stiffness: 120 (lower = slower, more fluid)
+  const gridX = useSpring(mouseX, { damping: 30, stiffness: 120 })
+  const gridY = useSpring(mouseY, { damping: 30, stiffness: 120 })
 
   useEffect(() => {
     if (isOpen) {
@@ -61,112 +54,28 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     }
   }
 
-  // ACCUMULATIVE mouse movement tracking
+  // LUSANO-STYLE COORDINATE MAPPING
+  // Maps mouse position to fixed canvas coordinates
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
-    const clientX = e.clientX - rect.left
-    const clientY = e.clientY - rect.top
-
-    // Mark that mouse is moving (stop momentum)
-    isMouseMoving.current = true
-    if (momentumFrameRef.current) {
-      cancelAnimationFrame(momentumFrameRef.current)
-    }
-
-    // Clear previous stop timer
-    if (mouseStopTimer.current) {
-      clearTimeout(mouseStopTimer.current)
-    }
-
-    // Skip first move to initialize position
-    if (isFirstMove.current) {
-      lastMousePos.current = { x: clientX, y: clientY }
-      isFirstMove.current = false
-      return
-    }
-
-    // Calculate delta (difference from last position)
-    const deltaX = clientX - lastMousePos.current.x
-    const deltaY = clientY - lastMousePos.current.y
-
-    // Sensitivity: how much the grid moves per pixel of mouse movement
-    const sensitivity = 1.5
-
-    // Update velocity for momentum effect
-    velocity.current = {
-      x: -deltaX * sensitivity,
-      y: -deltaY * sensitivity
-    }
-
-    // ACCUMULATE movement (inverse parallax: mouse right → grid left)
-    const currentX = mouseX.get()
-    const currentY = mouseY.get()
     
-    mouseX.set(currentX + velocity.current.x)
-    mouseY.set(currentY + velocity.current.y)
+    // Get mouse position relative to viewport (0-1)
+    const mousePercentX = (e.clientX - rect.left) / rect.width
+    const mousePercentY = (e.clientY - rect.top) / rect.height
 
-    // Update last position for next delta calculation
-    lastMousePos.current = { x: clientX, y: clientY }
+    // Map to canvas position
+    // Canvas is 250% (2.5x viewport), so overflow is 150%
+    // Formula: targetPosition = -(mousePercent * 1.5 * viewportSize)
+    // When mouse is at 50% → canvas at -75% (centered)
+    const targetX = -(mousePercentX * 1.5 * rect.width)
+    const targetY = -(mousePercentY * 1.5 * rect.height)
 
-    // Detect when mouse stops moving (after 100ms of no movement)
-    mouseStopTimer.current = setTimeout(() => {
-      isMouseMoving.current = false
-      // Start momentum decay
-      if (momentumFrameRef.current) {
-        cancelAnimationFrame(momentumFrameRef.current)
-      }
-      momentumFrameRef.current = requestAnimationFrame(applyMomentum)
-    }, 100)
+    // Update motion values (spring will animate smoothly)
+    mouseX.set(targetX)
+    mouseY.set(targetY)
   }
 
-  // Momentum decay effect (continues moving after mouse stops)
-  const applyMomentum = () => {
-    const decay = 0.92 // Decay factor (lower = stops faster)
-    const threshold = 0.1 // Stop when velocity is very small
-
-    velocity.current.x *= decay
-    velocity.current.y *= decay
-
-    // Check if we should stop (velocity too small)
-    if (Math.abs(velocity.current.x) < threshold && Math.abs(velocity.current.y) < threshold) {
-      velocity.current = { x: 0, y: 0 }
-      return
-    }
-
-    // Apply velocity to position
-    const currentX = mouseX.get()
-    const currentY = mouseY.get()
-    
-    mouseX.set(currentX + velocity.current.x)
-    mouseY.set(currentY + velocity.current.y)
-
-    // Continue animation
-    momentumFrameRef.current = requestAnimationFrame(applyMomentum)
-  }
-
-  const handleMouseLeave = () => {
-    // Reset tracking flag
-    isFirstMove.current = true
-    isMouseMoving.current = false
-    
-    // Start momentum decay animation
-    if (momentumFrameRef.current) {
-      cancelAnimationFrame(momentumFrameRef.current)
-    }
-    momentumFrameRef.current = requestAnimationFrame(applyMomentum)
-  }
-
-  // Cleanup momentum animation and timers on unmount
-  useEffect(() => {
-    return () => {
-      if (momentumFrameRef.current) {
-        cancelAnimationFrame(momentumFrameRef.current)
-      }
-      if (mouseStopTimer.current) {
-        clearTimeout(mouseStopTimer.current)
-      }
-    }
-  }, [])
+  // No handleMouseLeave needed - spring continues smoothly to target position
 
   if (!isOpen) return null
 
@@ -177,7 +86,6 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 bg-white overflow-hidden"
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       {/* Close Button */}
       <button
@@ -204,36 +112,36 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           <div className="relative w-full h-full">
             {products.map((product, index) => {
               // Dense chaotic positioning - 24 positions across canvas 250%
-              // More products visible at any time, less empty space
+              // MUCHA VARIACIÓN VERTICAL (eje Y) para mejor distribución
               const chaosPositions = [
-                { top: 8, left: 12 },    // Top-left
-                { top: 10, left: 45 },   // Top-center
-                { top: 6, left: 78 },    // Top-right
-                { top: 18, left: 25 },   // Upper-left-center
-                { top: 20, left: 62 },   // Upper-right-center
-                { top: 15, left: 88 },   // Upper-right edge
-                { top: 28, left: 8 },    // Mid-left edge
-                { top: 32, left: 38 },   // Mid-left-center
-                { top: 30, left: 70 },   // Mid-right-center
-                { top: 34, left: 92 },   // Mid-right edge
-                { top: 42, left: 18 },   // Center-left
-                { top: 45, left: 50 },   // True center
-                { top: 48, left: 82 },   // Center-right
-                { top: 56, left: 5 },    // Lower-mid-left edge
-                { top: 58, left: 32 },   // Lower-mid-left
-                { top: 60, left: 65 },   // Lower-mid-right
-                { top: 62, left: 90 },   // Lower-mid-right edge
-                { top: 70, left: 22 },   // Lower-left
-                { top: 72, left: 52 },   // Lower-center
-                { top: 68, left: 78 },   // Lower-right
-                { top: 80, left: 12 },   // Bottom-left
-                { top: 82, left: 42 },   // Bottom-center-left
-                { top: 85, left: 72 },   // Bottom-center-right
-                { top: 88, left: 88 },   // Bottom-right
+                { top: 5, left: 12 },    // ARRIBA EXTREMO
+                { top: 8, left: 45 },    // Arriba
+                { top: 3, left: 78 },    // ARRIBA EXTREMO derecha
+                { top: 15, left: 25 },   // Arriba-medio
+                { top: 22, left: 62 },   // Arriba-medio derecha
+                { top: 12, left: 88 },   // Arriba borde
+                { top: 30, left: 8 },    // Medio-arriba izquierda
+                { top: 38, left: 38 },   // Medio izquierda
+                { top: 28, left: 70 },   // Medio derecha
+                { top: 42, left: 92 },   // Medio borde derecho
+                { top: 48, left: 18 },   // CENTRO izquierda
+                { top: 45, left: 50 },   // CENTRO VERDADERO
+                { top: 52, left: 82 },   // Centro derecha
+                { top: 58, left: 5 },    // Medio-abajo izquierda
+                { top: 62, left: 32 },   // Medio-abajo
+                { top: 65, left: 65 },   // Medio-abajo derecha
+                { top: 60, left: 90 },   // Medio-abajo borde
+                { top: 72, left: 22 },   // Abajo izquierda
+                { top: 78, left: 52 },   // Abajo centro
+                { top: 75, left: 78 },   // Abajo derecha
+                { top: 82, left: 12 },   // ABAJO EXTREMO izquierda
+                { top: 85, left: 42 },   // Abajo extremo centro
+                { top: 88, left: 72 },   // ABAJO EXTREMO derecha
+                { top: 90, left: 88 },   // ABAJO EXTREMO borde
               ]
               
-              // Compact variable heights (smaller range for denser packing)
-              const heights = [320, 380, 340, 420, 360, 400, 350, 440, 370, 460, 330, 410, 390, 450, 365, 425, 355, 435, 375, 480, 345, 415, 385, 470]
+              // Variable heights con más rango (250-500px) para más caos visual
+              const heights = [320, 400, 280, 450, 350, 380, 300, 480, 360, 420, 290, 460, 340, 500, 310, 440, 330, 470, 370, 490, 260, 430, 390, 410]
               
               const position = chaosPositions[index % chaosPositions.length]
               const height = heights[index % heights.length]
