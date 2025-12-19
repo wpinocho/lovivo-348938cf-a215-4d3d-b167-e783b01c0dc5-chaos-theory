@@ -16,15 +16,21 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const [loading, setLoading] = useState(true)
   const { formatMoney } = useSettings()
 
-  // Mouse tracking with accumulative movement
+  // Mouse tracking with accumulative movement + MOMENTUM
   // Inicializar canvas CENTRADO para permitir movimiento en todas direcciones
-  // Canvas es 400% (4x viewport), así que -150% lo centra perfectamente
-  const mouseX = useMotionValue(-1500)
-  const mouseY = useMotionValue(-1500)
+  // Canvas es 250% (2.5x viewport), así que -75% lo centra perfectamente
+  const mouseX = useMotionValue(-750)
+  const mouseY = useMotionValue(-750)
   
   // Track last mouse position for delta calculation
   const lastMousePos = useRef({ x: 0, y: 0 })
   const isFirstMove = useRef(true)
+  
+  // Track velocity for momentum effect
+  const velocity = useRef({ x: 0, y: 0 })
+  const momentumFrameRef = useRef<number>()
+  const isMouseMoving = useRef(false)
+  const mouseStopTimer = useRef<NodeJS.Timeout>()
 
   // Smooth spring animation for grid movement (OPPOSITE direction)
   const gridX = useSpring(mouseX, { damping: 25, stiffness: 150 })
@@ -61,6 +67,17 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const clientX = e.clientX - rect.left
     const clientY = e.clientY - rect.top
 
+    // Mark that mouse is moving (stop momentum)
+    isMouseMoving.current = true
+    if (momentumFrameRef.current) {
+      cancelAnimationFrame(momentumFrameRef.current)
+    }
+
+    // Clear previous stop timer
+    if (mouseStopTimer.current) {
+      clearTimeout(mouseStopTimer.current)
+    }
+
     // Skip first move to initialize position
     if (isFirstMove.current) {
       lastMousePos.current = { x: clientX, y: clientY }
@@ -73,24 +90,83 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const deltaY = clientY - lastMousePos.current.y
 
     // Sensitivity: how much the grid moves per pixel of mouse movement
-    const sensitivity = 1.5 // Aumentado para movimiento más amplio y fluido
+    const sensitivity = 1.5
+
+    // Update velocity for momentum effect
+    velocity.current = {
+      x: -deltaX * sensitivity,
+      y: -deltaY * sensitivity
+    }
 
     // ACCUMULATE movement (inverse parallax: mouse right → grid left)
     const currentX = mouseX.get()
     const currentY = mouseY.get()
     
-    mouseX.set(currentX + (-deltaX * sensitivity))
-    mouseY.set(currentY + (-deltaY * sensitivity))
+    mouseX.set(currentX + velocity.current.x)
+    mouseY.set(currentY + velocity.current.y)
 
     // Update last position for next delta calculation
     lastMousePos.current = { x: clientX, y: clientY }
+
+    // Detect when mouse stops moving (after 100ms of no movement)
+    mouseStopTimer.current = setTimeout(() => {
+      isMouseMoving.current = false
+      // Start momentum decay
+      if (momentumFrameRef.current) {
+        cancelAnimationFrame(momentumFrameRef.current)
+      }
+      momentumFrameRef.current = requestAnimationFrame(applyMomentum)
+    }, 100)
+  }
+
+  // Momentum decay effect (continues moving after mouse stops)
+  const applyMomentum = () => {
+    const decay = 0.92 // Decay factor (lower = stops faster)
+    const threshold = 0.1 // Stop when velocity is very small
+
+    velocity.current.x *= decay
+    velocity.current.y *= decay
+
+    // Check if we should stop (velocity too small)
+    if (Math.abs(velocity.current.x) < threshold && Math.abs(velocity.current.y) < threshold) {
+      velocity.current = { x: 0, y: 0 }
+      return
+    }
+
+    // Apply velocity to position
+    const currentX = mouseX.get()
+    const currentY = mouseY.get()
+    
+    mouseX.set(currentX + velocity.current.x)
+    mouseY.set(currentY + velocity.current.y)
+
+    // Continue animation
+    momentumFrameRef.current = requestAnimationFrame(applyMomentum)
   }
 
   const handleMouseLeave = () => {
-    // Reset tracking flag, but DON'T move grid back to center
-    // Grid stays where it is - user can continue exploring
+    // Reset tracking flag
     isFirstMove.current = true
+    isMouseMoving.current = false
+    
+    // Start momentum decay animation
+    if (momentumFrameRef.current) {
+      cancelAnimationFrame(momentumFrameRef.current)
+    }
+    momentumFrameRef.current = requestAnimationFrame(applyMomentum)
   }
+
+  // Cleanup momentum animation and timers on unmount
+  useEffect(() => {
+    return () => {
+      if (momentumFrameRef.current) {
+        cancelAnimationFrame(momentumFrameRef.current)
+      }
+      if (mouseStopTimer.current) {
+        clearTimeout(mouseStopTimer.current)
+      }
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -118,7 +194,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[400%] h-[400%] relative"
+        className="absolute inset-0 w-[250%] h-[250%] relative"
       >
         {loading ? (
           <div className="text-center">
@@ -127,25 +203,37 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // Chaotic positioning - distribuido por TODO el canvas gigante (5%-95%)
-              // Esto aprovecha el canvas completo de 400% en todas direcciones
+              // Dense chaotic positioning - 24 positions across canvas 250%
+              // More products visible at any time, less empty space
               const chaosPositions = [
-                { top: 5, left: 10 },    // Esquina superior izquierda
-                { top: 12, left: 85 },   // Superior derecha extremo
-                { top: 22, left: 25 },   // Área superior-media
-                { top: 35, left: 70 },   // Centro-derecha
-                { top: 45, left: 15 },   // Media-izquierda
-                { top: 52, left: 90 },   // Centro-derecha extremo
-                { top: 60, left: 40 },   // Centro-centro
-                { top: 68, left: 5 },    // Media-izquierda extremo
-                { top: 75, left: 65 },   // Inferior-derecha
-                { top: 82, left: 30 },   // Inferior-centro
-                { top: 88, left: 80 },   // Esquina inferior derecha
-                { top: 93, left: 50 },   // Inferior-centro bajo
+                { top: 8, left: 12 },    // Top-left
+                { top: 10, left: 45 },   // Top-center
+                { top: 6, left: 78 },    // Top-right
+                { top: 18, left: 25 },   // Upper-left-center
+                { top: 20, left: 62 },   // Upper-right-center
+                { top: 15, left: 88 },   // Upper-right edge
+                { top: 28, left: 8 },    // Mid-left edge
+                { top: 32, left: 38 },   // Mid-left-center
+                { top: 30, left: 70 },   // Mid-right-center
+                { top: 34, left: 92 },   // Mid-right edge
+                { top: 42, left: 18 },   // Center-left
+                { top: 45, left: 50 },   // True center
+                { top: 48, left: 82 },   // Center-right
+                { top: 56, left: 5 },    // Lower-mid-left edge
+                { top: 58, left: 32 },   // Lower-mid-left
+                { top: 60, left: 65 },   // Lower-mid-right
+                { top: 62, left: 90 },   // Lower-mid-right edge
+                { top: 70, left: 22 },   // Lower-left
+                { top: 72, left: 52 },   // Lower-center
+                { top: 68, left: 78 },   // Lower-right
+                { top: 80, left: 12 },   // Bottom-left
+                { top: 82, left: 42 },   // Bottom-center-left
+                { top: 85, left: 72 },   // Bottom-center-right
+                { top: 88, left: 88 },   // Bottom-right
               ]
               
-              // Variable heights for asymmetric effect
-              const heights = [460, 580, 500, 620, 480, 590, 440, 550, 510, 600, 470, 560]
+              // Compact variable heights (smaller range for denser packing)
+              const heights = [320, 380, 340, 420, 360, 400, 350, 440, 370, 460, 330, 410, 390, 450, 365, 425, 355, 435, 375, 480, 345, 415, 385, 470]
               
               const position = chaosPositions[index % chaosPositions.length]
               const height = heights[index % heights.length]
@@ -160,7 +248,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
                     position: 'absolute',
                     top: `${position.top}%`,
                     left: `${position.left}%`,
-                    width: '280px',
+                    width: '200px',
                     height: `${height}px`
                   }}
                 >
