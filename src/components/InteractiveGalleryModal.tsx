@@ -17,9 +17,9 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const { formatMoney } = useSettings()
 
   // LUSANO-STYLE COORDINATE MAPPING
-  // Canvas: Width 180% (1.8x), Height 200% (2.0x) - Optimizado para 8 productos
+  // Canvas: Width 180% (1.8x), Height 220% (2.2x) - Optimizado para 8 productos + padding inferior
   // Mouse position directly maps to canvas position with smooth spring animation
-  // Center (50%, 50%) → Canvas at (-40% X, -50% Y)
+  // Center (50%, 50%) → Canvas at (-40% X, -60% Y)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
@@ -65,10 +65,10 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
 
     // Map to canvas position
     // Canvas X: 180% (overflow 80%) → targetX = -(mousePercent * 0.8 * viewportSize)
-    // Canvas Y: 200% (overflow 100%) → targetY = -(mousePercent * 1.0 * viewportSize)
-    // When mouse at (50%, 50%) → canvas at (-40%, -50%) [CENTERED]
+    // Canvas Y: 220% (overflow 120%) → targetY = -(mousePercent * 1.2 * viewportSize)
+    // When mouse at (50%, 50%) → canvas at (-40%, -60%) [CENTERED]
     const targetX = -(mousePercentX * 0.8 * rect.width)
-    const targetY = -(mousePercentY * 1.0 * rect.height)
+    const targetY = -(mousePercentY * 1.2 * rect.height)
 
     // Update motion values (spring will animate smoothly)
     mouseX.set(targetX)
@@ -102,7 +102,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[180%] h-[200%] relative"
+        className="absolute inset-0 w-[180%] h-[220%] relative"
       >
         {loading ? (
           <div className="text-center">
@@ -111,19 +111,19 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // OPTIMIZED DISTRIBUTION FOR 8 PRODUCTS (180% width x 200% height)
-              // Área segura: X [12-88%], Y [12-82%] (padding para productos de hasta 440px)
-              // Separación vertical: ~25-28% entre filas (sin encimados)
+              // OPTIMIZED DISTRIBUTION FOR 8 PRODUCTS (180% width x 220% height)
+              // Área segura: X [12-88%], Y [12-76%] (padding 154px para productos de hasta 440px)
+              // Separación vertical MAYOR: ~24-27% entre filas (sin encimados)
               // Cobertura COMPLETA: 3 filas (Superior, Media, Inferior) x (Izq-Centro-Der)
               const chaosPositions = [
-                { top: 15, left: 15 },   // 1️⃣ Fila SUPERIOR-izquierda
-                { top: 18, left: 50 },   // 2️⃣ Fila SUPERIOR-CENTRO
-                { top: 22, left: 80 },   // 3️⃣ Fila SUPERIOR-derecha (BAJADO para evitar encimado)
-                { top: 45, left: 22 },   // 4️⃣ Fila MEDIA-izquierda
-                { top: 50, left: 72 },   // 5️⃣ Fila MEDIA-derecha
-                { top: 70, left: 18 },   // 6️⃣ Fila INFERIOR-izquierda (MÁS ESPACIO vertical)
-                { top: 73, left: 55 },   // 7️⃣ Fila INFERIOR-CENTRO
-                { top: 76, left: 78 },   // 8️⃣ Fila INFERIOR-derecha
+                { top: 15, left: 15 },   // 1️⃣ Fila SUPERIOR-izquierda (15%)
+                { top: 18, left: 50 },   // 2️⃣ Fila SUPERIOR-CENTRO (18%)
+                { top: 20, left: 80 },   // 3️⃣ Fila SUPERIOR-derecha (20%) - SEPARACIÓN 5% con No.1
+                { top: 42, left: 22 },   // 4️⃣ Fila MEDIA-izquierda (42%) - +22-27% desde fila 1
+                { top: 47, left: 72 },   // 5️⃣ Fila MEDIA-derecha (47%)
+                { top: 68, left: 18 },   // 6️⃣ Fila INFERIOR-izquierda (68%) - +21-26% desde fila 2
+                { top: 70, left: 55 },   // 7️⃣ Fila INFERIOR-CENTRO (70%)
+                { top: 73, left: 78 },   // 8️⃣ Fila INFERIOR-derecha (73%) - Padding 154px desde bottom
               ]
               
               // Heights variadas para 8 productos (350-440px)
