@@ -58,9 +58,9 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const xPercent = (clientX / width - 0.5) * 2
     const yPercent = (clientY / height - 0.5) * 2
 
-    // Move grid in OPPOSITE direction (multiply by negative and scale down)
-    mouseX.set(-xPercent * 40)
-    mouseY.set(-yPercent * 40)
+    // Move grid in OPPOSITE direction (multiply by negative and scale for MORE movement)
+    mouseX.set(-xPercent * 100)
+    mouseY.set(-yPercent * 100)
   }
 
   const handleMouseLeave = () => {
@@ -95,17 +95,35 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[150%] h-[150%] flex items-center justify-center"
+        className="absolute inset-0 w-[400%] h-[400%] flex items-center justify-center"
       >
         {loading ? (
           <div className="text-center">
             <p className="text-sm tracking-[0.2em] uppercase text-black/40">Loading Gallery...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-8 px-16 py-16">
+          <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // Asymmetric heights for masonry effect
-              const heights = [500, 600, 550, 480, 520, 580, 510, 490]
+              // Chaotic positioning - dispersed across canvas
+              const chaosPositions = [
+                { top: 10, left: 8 },    // Top-left corner
+                { top: 15, left: 65 },   // Top-right area
+                { top: 35, left: 25 },   // Upper-mid left
+                { top: 30, left: 85 },   // Upper-mid right edge
+                { top: 50, left: 45 },   // Dead center
+                { top: 55, left: 15 },   // Mid-left
+                { top: 65, left: 72 },   // Lower-mid right
+                { top: 75, left: 35 },   // Lower-mid center
+                { top: 80, left: 90 },   // Bottom-right corner
+                { top: 85, left: 55 },   // Bottom-center
+                { top: 40, left: 5 },    // Mid-left edge
+                { top: 70, left: 8 },    // Lower-left
+              ]
+              
+              // Variable heights for asymmetric effect
+              const heights = [460, 580, 500, 620, 480, 590, 440, 550, 510, 600, 470, 560]
+              
+              const position = chaosPositions[index % chaosPositions.length]
               const height = heights[index % heights.length]
 
               return (
@@ -114,7 +132,13 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
                   to={`/products/${product.slug}`}
                   onClick={onClose}
                   className="group relative overflow-hidden bg-white"
-                  style={{ height: `${height}px` }}
+                  style={{
+                    position: 'absolute',
+                    top: `${position.top}%`,
+                    left: `${position.left}%`,
+                    width: '280px',
+                    height: `${height}px`
+                  }}
                 >
                   {/* Product Image */}
                   <motion.img
