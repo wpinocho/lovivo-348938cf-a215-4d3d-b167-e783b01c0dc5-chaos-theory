@@ -17,9 +17,9 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
   const { formatMoney } = useSettings()
 
   // LUSANO-STYLE COORDINATE MAPPING
-  // Canvas: Width 180% (1.8x), Height 220% (2.2x) - Optimizado para 8 productos + padding inferior
+  // Canvas: Width 140% (1.4x), Height 160% (1.6x) - Productos reducidos a 50% para mejor visualización
   // Mouse position directly maps to canvas position with smooth spring animation
-  // Center (50%, 50%) → Canvas at (-40% X, -60% Y)
+  // Center (50%, 50%) → Canvas at (-20% X, -30% Y)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
@@ -64,11 +64,11 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
     const mousePercentY = (e.clientY - rect.top) / rect.height
 
     // Map to canvas position
-    // Canvas X: 180% (overflow 80%) → targetX = -(mousePercent * 0.8 * viewportSize)
-    // Canvas Y: 220% (overflow 120%) → targetY = -(mousePercent * 1.2 * viewportSize)
-    // When mouse at (50%, 50%) → canvas at (-40%, -60%) [CENTERED]
-    const targetX = -(mousePercentX * 0.8 * rect.width)
-    const targetY = -(mousePercentY * 1.2 * rect.height)
+    // Canvas X: 140% (overflow 40%) → targetX = -(mousePercent * 0.4 * viewportSize)
+    // Canvas Y: 160% (overflow 60%) → targetY = -(mousePercent * 0.6 * viewportSize)
+    // When mouse at (50%, 50%) → canvas at (-20%, -30%) [CENTERED]
+    const targetX = -(mousePercentX * 0.4 * rect.width)
+    const targetY = -(mousePercentY * 0.6 * rect.height)
 
     // Update motion values (spring will animate smoothly)
     mouseX.set(targetX)
@@ -102,7 +102,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
           x: gridX,
           y: gridY,
         }}
-        className="absolute inset-0 w-[180%] h-[220%] relative"
+        className="absolute inset-0 w-[140%] h-[160%] relative"
       >
         {loading ? (
           <div className="text-center">
@@ -111,9 +111,10 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
         ) : (
           <div className="relative w-full h-full">
             {products.map((product, index) => {
-              // OPTIMIZED DISTRIBUTION FOR 8 PRODUCTS (180% width x 220% height)
-              // Área segura: X [12-88%], Y [12-76%] (padding 154px para productos de hasta 440px)
-              // Separación vertical MAYOR: ~24-27% entre filas (sin encimados)
+              // OPTIMIZED DISTRIBUTION FOR 8 PRODUCTS (140% width x 160% height)
+              // Productos reducidos a 50% para mejor visualización al 100% zoom
+              // Área segura: X [12-88%], Y [12-76%] (padding adecuado para productos de hasta 220px)
+              // Separación vertical: ~24-27% entre filas (sin encimados)
               // Cobertura COMPLETA: 3 filas (Superior, Media, Inferior) x (Izq-Centro-Der)
               const chaosPositions = [
                 { top: 15, left: 15 },   // 1️⃣ Fila SUPERIOR-izquierda (15%)
@@ -126,8 +127,8 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
                 { top: 73, left: 78 },   // 8️⃣ Fila INFERIOR-derecha (73%) - Padding 154px desde bottom
               ]
               
-              // Heights variadas para 8 productos (350-440px)
-              const heights = [380, 420, 350, 400, 440, 370, 410, 390]
+              // Heights variadas para 8 productos (175-220px) - Reducidas a 50%
+              const heights = [190, 210, 175, 200, 220, 185, 205, 195]
               
               const position = chaosPositions[index % chaosPositions.length]
               const height = heights[index % heights.length]
@@ -142,7 +143,7 @@ export const InteractiveGalleryModal = ({ isOpen, onClose }: InteractiveGalleryM
                     position: 'absolute',
                     top: `${position.top}%`,
                     left: `${position.left}%`,
-                    width: '220px',
+                    width: '110px',
                     height: `${height}px`
                   }}
                 >
